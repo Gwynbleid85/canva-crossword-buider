@@ -70,33 +70,34 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     }
   }
 
-  const numRows = maxRow - minRow + 1;
-  const numCols = maxCol - minCol + 1;
-
-  // Classic mode: render a single black background rect covering the entire grid
-  if (!isSecret) {
-    const bgW = numCols * (cellSize + border) + border;
-    const bgH = numRows * (cellSize + border) + border;
-    elements.push({
-      type: "shape",
-      top: -border,
-      left: -border,
-      width: bgW,
-      height: bgH,
-      paths: [
-        {
-          d: `M 0 0 H ${bgW} V ${bgH} H 0 Z`,
-          fill: { color: COLORS.black, dropTarget: false },
-        },
-      ],
-      viewBox: { top: 0, left: 0, width: bgW, height: bgH },
-    });
-  }
-
   // Render each cell
   for (const key of Object.keys(data.cells) as CellKey[]) {
     const cell = data.cells[key]!;
-    if (cell.isBlack) continue; // Skip black cells (transparent)
+
+    // In classic mode, black cells get a black fill; in secret mode they're skipped (transparent)
+    if (cell.isBlack) {
+      if (!isSecret) {
+        const { row, col } = parseKey(key);
+        const x = (col - minCol) * (cellSize + border);
+        const y = (row - minRow) * (cellSize + border);
+        const outerSize = cellSize + border * 2;
+        elements.push({
+          type: "shape",
+          top: y - border,
+          left: x - border,
+          width: outerSize,
+          height: outerSize,
+          paths: [
+            {
+              d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z`,
+              fill: { color: COLORS.black, dropTarget: false },
+            },
+          ],
+          viewBox: { top: 0, left: 0, width: outerSize, height: outerSize },
+        });
+      }
+      continue;
+    }
 
     const { row, col } = parseKey(key);
     const gridRow = row - minRow;
@@ -105,24 +106,22 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     const x = gridCol * (cellSize + border);
     const y = gridRow * (cellSize + border);
 
-    // Secret mode: per-cell black border rect behind the white cell
-    if (isSecret) {
-      const outerSize = cellSize + border * 2;
-      elements.push({
-        type: "shape",
-        top: y - border,
-        left: x - border,
-        width: outerSize,
-        height: outerSize,
-        paths: [
-          {
-            d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z`,
-            fill: { color: COLORS.border, dropTarget: false },
-          },
-        ],
-        viewBox: { top: 0, left: 0, width: outerSize, height: outerSize },
-      });
-    }
+    // Black border rect behind the white cell
+    const outerSize = cellSize + border * 2;
+    elements.push({
+      type: "shape",
+      top: y - border,
+      left: x - border,
+      width: outerSize,
+      height: outerSize,
+      paths: [
+        {
+          d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z`,
+          fill: { color: COLORS.border, dropTarget: false },
+        },
+      ],
+      viewBox: { top: 0, left: 0, width: outerSize, height: outerSize },
+    });
 
     // Cell fill rect (always white)
     elements.push({

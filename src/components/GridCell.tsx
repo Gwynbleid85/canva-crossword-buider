@@ -54,7 +54,9 @@ export function GridCell({
     [cellKey, onSetLetter],
   );
 
-  const cellClass = cell.isBlack ? styles.cellBlack : styles.cellWhite;
+  const cellClass = cell.isBlack
+    ? (showClueNumber ? styles.cellBlackFilled : styles.cellBlack)
+    : styles.cellWhite;
 
   const secretClass = secretEdges
     ? [

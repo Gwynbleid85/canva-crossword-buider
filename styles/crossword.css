@@ -34,6 +34,10 @@
   background-color: transparent;
 }
 
+.cellBlackFilled {
+  background-color: #000;
+}
+
 .secretCell {
   z-index: 100;
 }
