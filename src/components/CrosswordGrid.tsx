@@ -124,7 +124,7 @@ export function CrosswordGrid({
         className={styles.grid}
         style={{
           gridTemplateColumns: showRowNumbers
-            ? `auto repeat(${numCols}, ${cellSize}px)`
+            ? `${cellSize}px repeat(${numCols}, ${cellSize}px)`
             : `repeat(${numCols}, ${cellSize}px)`,
           gridTemplateRows: `repeat(${numRows}, ${cellSize}px)`,
         }}

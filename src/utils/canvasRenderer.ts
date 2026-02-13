@@ -24,7 +24,7 @@ type RenderedElement =
       textAlign: "center" | "start";
     };
 
-const ROW_NUM_WIDTH = 20;
+const ROW_NUM_WIDTH = CANVAS_CELL_SIZE;
 
 export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
   const bounds = computeBounds(data.cells);
@@ -46,11 +46,11 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
         type: "text",
         top: y + cellSize * 0.2,
         left: 0,
-        width: ROW_NUM_WIDTH - 2,
+        width: ROW_NUM_WIDTH,
         children: [String(row - minRow + 1)],
-        fontSize: 10,
-        fontWeight: "normal",
-        color: "#6b7280",
+        fontSize: 14,
+        fontWeight: "bold",
+        color: COLORS.black,
         textAlign: "center",
       });
     }
@@ -165,6 +165,26 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
         ],
         viewBox: { top: 0, left: 0, width: outerW, height: outerH },
       });
+
+      // Draw thin horizontal dividers inside the secret column frame
+      for (let row = secretMinRow + 1; row <= secretMaxRow; row++) {
+        const gridRow = row - minRow;
+        const dividerY = gridRow * (cellSize + border) - border;
+        elements.push({
+          type: "shape",
+          top: dividerY,
+          left: frameX,
+          width: cellSize,
+          height: border,
+          paths: [
+            {
+              d: `M 0 0 H ${cellSize} V ${border} H 0 Z`,
+              fill: { color: COLORS.border, dropTarget: false },
+            },
+          ],
+          viewBox: { top: 0, left: 0, width: cellSize, height: border },
+        });
+      }
     }
   }
 

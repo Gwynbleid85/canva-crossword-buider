@@ -3,7 +3,7 @@ export const MAX_CELL_SIZE = 40;
 export const MIN_CELL_SIZE = 20;
 export const CANVAS_CELL_SIZE = 40;
 export const CANVAS_BORDER_WIDTH = 1;
-export const MAX_GRID_SIZE = 10;
+export const MAX_GRID_SIZE = 16;
 
 export const COLORS = {
   white: "#ffffff",
