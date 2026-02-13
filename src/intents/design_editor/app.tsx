@@ -1,8 +1,9 @@
-import { Button, Rows, Text, Title } from "@canva/app-ui-kit";
+import { Button, Rows, Switch, Text, Title } from "@canva/app-ui-kit";
 import { initAppElement } from "@canva/design";
 import type { AppElementOptions } from "@canva/design";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as styles from "styles/components.css";
+import * as crosswordStyles from "styles/crossword.css";
 
 import type { AppElementData } from "../../types";
 import { useCrosswordState } from "../../hooks/useCrosswordState";
@@ -10,6 +11,7 @@ import { CrosswordGrid } from "../../components/CrosswordGrid";
 import { ClueEditor } from "../../components/ClueEditor";
 import { renderToCanvasElements } from "../../utils/canvasRenderer";
 import { serialize, deserialize, estimateSize } from "../../utils/serialization";
+import { computeBounds } from "../../utils/gridHelpers";
 
 const MAX_DATA_SIZE = 5000;
 
@@ -25,10 +27,12 @@ type UpdateFn = (opts: AppElementOptions<AppElementData>) => Promise<void>;
 export const App = () => {
   const {
     data,
-    toggleBlack,
+    removeCell,
     setLetter,
     updateClueText,
     addCellInDirection,
+    setSecretCol,
+    setShowRowNumbers,
     resetGrid,
     loadData,
   } = useCrosswordState();
@@ -56,6 +60,17 @@ export const App = () => {
     }
   };
 
+  // Compute available columns for secret word selector
+  const availableCols = useMemo(() => {
+    const bounds = computeBounds(data.cells);
+    if (!bounds) return [];
+    const cols: number[] = [];
+    for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+      cols.push(c);
+    }
+    return cols;
+  }, [data.cells]);
+
   const serialized = serialize(data);
   const dataSize = estimateSize(serialized);
   const isOverSize = dataSize > MAX_DATA_SIZE;
@@ -66,16 +81,41 @@ export const App = () => {
         <Title size="small">Crossword Builder</Title>
 
         <Text size="small" tone="tertiary">
-          Hover a cell and click "+" to expand. Click a cell to toggle
-          black/white. Focus a cell and type to enter a letter.
+          Hover a cell and click "+" to expand. Hover an edge cell to remove it.
+          Focus a cell and type to enter a letter.
         </Text>
 
         <CrosswordGrid
           data={data}
-          onToggleBlack={toggleBlack}
+          secretCol={data.secretCol}
+          showRowNumbers={data.showRowNumbers}
+          onRemoveCell={removeCell}
           onSetLetter={setLetter}
           onAddCell={addCellInDirection}
         />
+
+        <Switch
+          label="Show row numbers"
+          value={data.showRowNumbers}
+          onChange={(value) => setShowRowNumbers(value)}
+        />
+
+        <Rows spacing="0.5u">
+          <Text size="small" variant="bold">
+            Secret word column
+          </Text>
+          <div className={crosswordStyles.secretColSelector}>
+            {availableCols.map((col) => (
+              <button
+                key={col}
+                className={`${crosswordStyles.secretColButton}${data.secretCol === col ? ` ${crosswordStyles.secretColButtonActive}` : ""}`}
+                onClick={() => setSecretCol(data.secretCol === col ? null : col)}
+              >
+                {col + 1}
+              </button>
+            ))}
+          </div>
+        </Rows>
 
         {isOverSize && (
           <Text size="small" tone="critical">

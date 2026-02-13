@@ -3,12 +3,21 @@ import type { CellKey, CrosswordCell, Direction } from "../types";
 import { AddCellButton } from "./AddCellButton";
 import * as styles from "styles/crossword.css";
 
+interface SecretEdges {
+  left: boolean;
+  right: boolean;
+  top: boolean;
+  bottom: boolean;
+}
+
 interface GridCellProps {
   cell: CrosswordCell;
   cellKey: CellKey;
   cellSize: number;
   edgeDirections: Direction[];
-  onToggleBlack: (key: CellKey) => void;
+  isRemovable: boolean;
+  secretEdges: SecretEdges | null;
+  onRemoveCell: (key: CellKey) => void;
   onSetLetter: (key: CellKey, letter: string) => void;
   onAddCell: (row: number, col: number, direction: Direction) => void;
 }
@@ -18,16 +27,17 @@ export function GridCell({
   cellKey,
   cellSize,
   edgeDirections,
-  onToggleBlack,
+  isRemovable,
+  secretEdges,
+  onRemoveCell,
   onSetLetter,
   onAddCell,
 }: GridCellProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   const handleClick = useCallback(() => {
-    onToggleBlack(cellKey);
     ref.current?.focus();
-  }, [cellKey, onToggleBlack]);
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -44,10 +54,21 @@ export function GridCell({
 
   const cellClass = cell.isBlack ? styles.cellBlack : styles.cellWhite;
 
+  const secretClass = secretEdges
+    ? [
+        secretEdges.left ? styles.cellSecretLeft : "",
+        secretEdges.right ? styles.cellSecretRight : "",
+        secretEdges.top ? styles.cellSecretTop : "",
+        secretEdges.bottom ? styles.cellSecretBottom : "",
+            ]
+        .filter(Boolean)
+        .join(" ")
+    : "";
+
   return (
     <div
       ref={ref}
-      className={`${styles.cell} ${cellClass}`}
+      className={`${styles.cell} ${cellClass} ${secretClass}`}
       style={{ width: cellSize, height: cellSize }}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -55,14 +76,6 @@ export function GridCell({
       role="gridcell"
       aria-label={`Cell ${cell.row},${cell.col}${cell.isBlack ? " (black)" : cell.letter ? ` letter ${cell.letter}` : ""}`}
     >
-      {!cell.isBlack && cell.clueNumber !== null && (
-        <span
-          className={styles.clueNumber}
-          style={{ fontSize: Math.max(7, cellSize * 0.22) }}
-        >
-          {cell.clueNumber}
-        </span>
-      )}
       {!cell.isBlack && cell.letter && (
         <span
           className={styles.letter}
@@ -70,6 +83,20 @@ export function GridCell({
         >
           {cell.letter}
         </span>
+      )}
+      {!cell.isBlack && isRemovable && (
+        <div className={styles.removeButtonWrapper}>
+          <button
+            className={styles.removeButton}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveCell(cellKey);
+            }}
+            aria-label="Remove cell"
+          >
+            ×
+          </button>
+        </div>
       )}
       {edgeDirections.map((dir) => (
         <AddCellButton

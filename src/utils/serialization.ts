@@ -29,6 +29,8 @@ export function serialize(data: CrosswordData): AppElementData {
       r: c.row,
       c: c.col,
     })),
+    sc: data.secretCol ?? null,
+    rn: data.showRowNumbers,
   };
 }
 
@@ -61,6 +63,8 @@ export function deserialize(appData: AppElementData): CrosswordData {
         col: c.c,
       })),
     },
+    secretCol: (appData.sc as number | null) ?? null,
+    showRowNumbers: (appData.rn as boolean) ?? false,
   };
 }
 

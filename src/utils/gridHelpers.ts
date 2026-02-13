@@ -62,6 +62,20 @@ export function getEdgeDirections(
   return directions;
 }
 
+export function isRemovable(
+  key: CellKey,
+  cells: Record<CellKey, CrosswordCell>,
+): boolean {
+  const { row, col } = parseKey(key);
+  const hasLeft = !!cells[makeKey(row, col - 1)];
+  const hasRight = !!cells[makeKey(row, col + 1)];
+  const hasUp = !!cells[makeKey(row - 1, col)];
+  const hasDown = !!cells[makeKey(row + 1, col)];
+
+  // Removable if at start/end of row or start/end of column
+  return !hasLeft || !hasRight || !hasUp || !hasDown;
+}
+
 export function getNeighborPosition(
   row: number,
   col: number,

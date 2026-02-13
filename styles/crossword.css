@@ -8,9 +8,8 @@
 
 .grid {
   display: grid;
-  gap: 1px;
-  background-color: #000;
-  border: 1px solid #000;
+  gap: 0;
+  background-color: transparent;
 }
 
 /* Single cell */
@@ -28,10 +27,31 @@
 
 .cellWhite {
   background-color: #fff;
+  border: 1px solid #000;
 }
 
 .cellBlack {
-  background-color: #000;
+  background-color: transparent;
+}
+
+.secretCell {
+  z-index: 100;
+}
+
+.cellSecretLeft {
+  border-left: 2px solid #000;
+}
+
+.cellSecretRight {
+  border-right: 2px solid #000;
+}
+
+.cellSecretTop {
+  border-top: 2px solid #000;
+}
+
+.cellSecretBottom {
+  border-bottom: 2px solid #000;
 }
 
 .cellFocused {
@@ -63,7 +83,18 @@
   text-transform: uppercase;
   pointer-events: none;
   font-family: Arial, sans-serif;
-  margin-top: 4px;
+}
+
+/* Row number label */
+.rowNumber {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+  font-size: 10px;
+  color: #6b7280;
+  font-family: Arial, sans-serif;
+  user-select: none;
 }
 
 /* Placeholder cell (empty grid position) */
@@ -134,6 +165,83 @@
   right: -9px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+/* Remove cell button */
+.removeButtonWrapper {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.cell:hover .removeButtonWrapper,
+.cell:focus .removeButtonWrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.removeButton {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-weight: 700;
+  transition: background-color 0.1s ease;
+}
+
+.removeButton:hover {
+  background-color: #dc2626;
+}
+
+/* Secret column selector */
+.secretColSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.secretColButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+  color: #000;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.secretColButton:hover {
+  background-color: #f3f4f6;
+}
+
+.secretColButtonActive {
+  background-color: #fff;
+  border: 2px solid #000;
 }
 
 /* Clue editor */

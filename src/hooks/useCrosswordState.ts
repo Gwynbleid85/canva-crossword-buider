@@ -14,6 +14,10 @@ function createCell(row: number, col: number): CrosswordCell {
   return { row, col, isBlack: false, letter: "", clueNumber: null };
 }
 
+function withSecretCol(data: CrosswordData, secretCol: number | null): CrosswordData {
+  return { ...data, secretCol };
+}
+
 function renumber(data: CrosswordData): CrosswordData {
   const result = assignClueNumbers(data.cells);
 
@@ -34,14 +38,14 @@ function renumber(data: CrosswordData): CrosswordData {
     text: downTextMap.get(c.number) ?? "",
   }));
 
-  return { cells: result.cells, clues: { across, down } };
+  return { cells: result.cells, clues: { across, down }, secretCol: data.secretCol, showRowNumbers: data.showRowNumbers };
 }
 
 function createInitialState(): CrosswordData {
   const cells: Record<CellKey, CrosswordCell> = {
     [makeKey(0, 0)]: createCell(0, 0),
   };
-  return renumber({ cells, clues: { across: [], down: [] } });
+  return renumber({ cells, clues: { across: [], down: [] }, secretCol: null, showRowNumbers: false });
 }
 
 export function useCrosswordState(initialData?: CrosswordData) {
@@ -148,6 +152,14 @@ export function useCrosswordState(initialData?: CrosswordData) {
     [addCell],
   );
 
+  const setSecretCol = useCallback((col: number | null) => {
+    setData((prev) => withSecretCol(prev, col));
+  }, []);
+
+  const setShowRowNumbers = useCallback((showRowNumbers: boolean) => {
+    setData((prev) => ({ ...prev, showRowNumbers }));
+  }, []);
+
   const resetGrid = useCallback(() => {
     setData(createInitialState());
   }, []);
@@ -164,6 +176,8 @@ export function useCrosswordState(initialData?: CrosswordData) {
     setLetter,
     updateClueText,
     addCellInDirection,
+    setSecretCol,
+    setShowRowNumbers,
     resetGrid,
     loadData,
   };
