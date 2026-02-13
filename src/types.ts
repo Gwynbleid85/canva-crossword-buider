@@ -1,5 +1,7 @@
 export type CellKey = `${number},${number}`;
 
+export type CrosswordMode = "classic" | "secret";
+
 export type Direction = "up" | "down" | "left" | "right";
 
 export interface CrosswordCell {
@@ -22,12 +24,14 @@ export interface CrosswordData {
   clues: { across: ClueEntry[]; down: ClueEntry[] };
   secretCol: number | null;
   showRowNumbers: boolean;
+  mode: CrosswordMode;
 }
 
 export type AppElementData = {
   [key: string]:
     | number
     | boolean
+    | string
     | null
     | { r: number; c: number; b: boolean; l: string; n: number | null }[]
     | { n: number; t: string; r: number; c: number }[];
@@ -37,4 +41,5 @@ export type AppElementData = {
   cd: { n: number; t: string; r: number; c: number }[];
   sc: number | null;
   rn: boolean;
+  m: string;
 };

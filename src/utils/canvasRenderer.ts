@@ -36,10 +36,11 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
   const border = CANVAS_BORDER_WIDTH;
 
   const elements: RenderedElement[] = [];
+  const isSecret = data.mode === "secret";
 
-  // Extend grid left if any row needs a row number at minCol
+  // Extend grid left if any row needs a row number at minCol (secret mode only)
   let firstWhiteColPerRow: Map<number, number> | null = null;
-  if (data.showRowNumbers) {
+  if (isSecret && data.showRowNumbers) {
     firstWhiteColPerRow = getFirstWhiteColPerRow(data.cells);
     for (const firstCol of firstWhiteColPerRow.values()) {
       if (firstCol === minCol) {
@@ -49,7 +50,7 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     }
   }
 
-  // Render row numbers — positioned directly to the left of each row's first white cell
+  // Render row numbers — positioned directly to the left of each row's first white cell (secret mode only)
   if (firstWhiteColPerRow) {
     for (const [row, firstWhiteCol] of firstWhiteColPerRow) {
       const gridRow = row - minRow;
@@ -69,7 +70,30 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     }
   }
 
-  // Render each cell — only white cells get rendered
+  const numRows = maxRow - minRow + 1;
+  const numCols = maxCol - minCol + 1;
+
+  // Classic mode: render a single black background rect covering the entire grid
+  if (!isSecret) {
+    const bgW = numCols * (cellSize + border) + border;
+    const bgH = numRows * (cellSize + border) + border;
+    elements.push({
+      type: "shape",
+      top: -border,
+      left: -border,
+      width: bgW,
+      height: bgH,
+      paths: [
+        {
+          d: `M 0 0 H ${bgW} V ${bgH} H 0 Z`,
+          fill: { color: COLORS.black, dropTarget: false },
+        },
+      ],
+      viewBox: { top: 0, left: 0, width: bgW, height: bgH },
+    });
+  }
+
+  // Render each cell
   for (const key of Object.keys(data.cells) as CellKey[]) {
     const cell = data.cells[key]!;
     if (cell.isBlack) continue; // Skip black cells (transparent)
@@ -81,23 +105,24 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     const x = gridCol * (cellSize + border);
     const y = gridRow * (cellSize + border);
 
-    const outerSize = cellSize + border * 2;
-
-    // Black border rect behind the white cell
-    elements.push({
-      type: "shape",
-      top: y - border,
-      left: x - border,
-      width: outerSize,
-      height: outerSize,
-      paths: [
-        {
-          d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z`,
-          fill: { color: COLORS.border, dropTarget: false },
-        },
-      ],
-      viewBox: { top: 0, left: 0, width: outerSize, height: outerSize },
-    });
+    // Secret mode: per-cell black border rect behind the white cell
+    if (isSecret) {
+      const outerSize = cellSize + border * 2;
+      elements.push({
+        type: "shape",
+        top: y - border,
+        left: x - border,
+        width: outerSize,
+        height: outerSize,
+        paths: [
+          {
+            d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z`,
+            fill: { color: COLORS.border, dropTarget: false },
+          },
+        ],
+        viewBox: { top: 0, left: 0, width: outerSize, height: outerSize },
+      });
+    }
 
     // Cell fill rect (always white)
     elements.push({
@@ -115,6 +140,21 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
       viewBox: { top: 0, left: 0, width: cellSize, height: cellSize },
     });
 
+    // Clue number in top-left (classic mode only)
+    if (!isSecret && cell.clueNumber !== null) {
+      elements.push({
+        type: "text",
+        top: y,
+        left: x + 2,
+        width: cellSize - 2,
+        children: [String(cell.clueNumber)],
+        fontSize: 10,
+        fontWeight: "normal",
+        color: COLORS.black,
+        textAlign: "start",
+      });
+    }
+
     // Letter (centered)
     if (cell.letter) {
       elements.push({
@@ -131,8 +171,8 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     }
   }
 
-  // Render a single thick frame around the secret column (on top of everything)
-  if (data.secretCol !== null && data.secretCol !== undefined) {
+  // Render a single thick frame around the secret column (secret mode only)
+  if (isSecret && data.secretCol !== null && data.secretCol !== undefined) {
     let secretMinRow: number | null = null;
     let secretMaxRow: number | null = null;
     for (const k of Object.keys(data.cells) as CellKey[]) {

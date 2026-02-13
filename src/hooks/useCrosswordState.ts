@@ -3,6 +3,7 @@ import type {
   CellKey,
   CrosswordCell,
   CrosswordData,
+  CrosswordMode,
   Direction,
 } from "../types";
 import { makeKey, getNeighborPosition } from "../utils/gridHelpers";
@@ -38,14 +39,14 @@ function renumber(data: CrosswordData): CrosswordData {
     text: downTextMap.get(c.number) ?? "",
   }));
 
-  return { cells: result.cells, clues: { across, down }, secretCol: data.secretCol, showRowNumbers: data.showRowNumbers };
+  return { cells: result.cells, clues: { across, down }, secretCol: data.secretCol, showRowNumbers: data.showRowNumbers, mode: data.mode };
 }
 
 function createInitialState(): CrosswordData {
   const cells: Record<CellKey, CrosswordCell> = {
     [makeKey(0, 0)]: createCell(0, 0),
   };
-  return renumber({ cells, clues: { across: [], down: [] }, secretCol: null, showRowNumbers: false });
+  return renumber({ cells, clues: { across: [], down: [] }, secretCol: null, showRowNumbers: false, mode: "secret" });
 }
 
 export function useCrosswordState(initialData?: CrosswordData) {
@@ -160,6 +161,10 @@ export function useCrosswordState(initialData?: CrosswordData) {
     setData((prev) => ({ ...prev, showRowNumbers }));
   }, []);
 
+  const setMode = useCallback((mode: CrosswordMode) => {
+    setData((prev) => ({ ...prev, mode }));
+  }, []);
+
   const resetGrid = useCallback(() => {
     setData(createInitialState());
   }, []);
@@ -178,6 +183,7 @@ export function useCrosswordState(initialData?: CrosswordData) {
     addCellInDirection,
     setSecretCol,
     setShowRowNumbers,
+    setMode,
     resetGrid,
     loadData,
   };

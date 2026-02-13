@@ -3,6 +3,7 @@ import type {
   CellKey,
   CrosswordData,
   CrosswordCell,
+  CrosswordMode,
 } from "../types";
 import { makeKey } from "./gridHelpers";
 
@@ -31,6 +32,7 @@ export function serialize(data: CrosswordData): AppElementData {
     })),
     sc: data.secretCol ?? null,
     rn: data.showRowNumbers,
+    m: data.mode,
   };
 }
 
@@ -65,6 +67,7 @@ export function deserialize(appData: AppElementData): CrosswordData {
     },
     secretCol: (appData.sc as number | null) ?? null,
     showRowNumbers: (appData.rn as boolean) ?? false,
+    mode: ((appData.m as string) || "secret") as CrosswordMode,
   };
 }
 

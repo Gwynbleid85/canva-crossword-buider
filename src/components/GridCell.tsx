@@ -17,6 +17,7 @@ interface GridCellProps {
   edgeDirections: Direction[];
   isRemovable: boolean;
   secretEdges: SecretEdges | null;
+  showClueNumber?: boolean;
   onRemoveCell: (key: CellKey) => void;
   onSetLetter: (key: CellKey, letter: string) => void;
   onAddCell: (row: number, col: number, direction: Direction) => void;
@@ -29,6 +30,7 @@ export function GridCell({
   edgeDirections,
   isRemovable,
   secretEdges,
+  showClueNumber = false,
   onRemoveCell,
   onSetLetter,
   onAddCell,
@@ -76,6 +78,14 @@ export function GridCell({
       role="gridcell"
       aria-label={`Cell ${cell.row},${cell.col}${cell.isBlack ? " (black)" : cell.letter ? ` letter ${cell.letter}` : ""}`}
     >
+      {showClueNumber && !cell.isBlack && cell.clueNumber !== null && (
+        <span
+          className={styles.clueNumber}
+          style={{ fontSize: Math.max(7, cellSize * 0.22) }}
+        >
+          {cell.clueNumber}
+        </span>
+      )}
       {!cell.isBlack && cell.letter && (
         <span
           className={styles.letter}

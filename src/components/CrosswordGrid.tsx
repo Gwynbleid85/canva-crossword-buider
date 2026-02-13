@@ -1,4 +1,4 @@
-import type { CellKey, CrosswordData, Direction } from "../types";
+import type { CellKey, CrosswordData, CrosswordMode, Direction } from "../types";
 import {
   computeBounds,
   makeKey,
@@ -14,6 +14,7 @@ interface CrosswordGridProps {
   data: CrosswordData;
   secretCol: number | null;
   showRowNumbers: boolean;
+  mode: CrosswordMode;
   onRemoveCell: (key: CellKey) => void;
   onSetLetter: (key: CellKey, letter: string) => void;
   onAddCell: (row: number, col: number, direction: Direction) => void;
@@ -23,6 +24,7 @@ export function CrosswordGrid({
   data,
   secretCol,
   showRowNumbers,
+  mode,
   onRemoveCell,
   onSetLetter,
   onAddCell,
@@ -33,7 +35,9 @@ export function CrosswordGrid({
   const { minRow, maxRow, maxCol } = bounds;
   let { minCol } = bounds;
 
-  const firstWhiteColPerRow = showRowNumbers
+  const isSecret = mode === "secret";
+
+  const firstWhiteColPerRow = isSecret && showRowNumbers
     ? getFirstWhiteColPerRow(data.cells)
     : null;
 
@@ -60,7 +64,7 @@ export function CrosswordGrid({
   // Compute secret column edge rows (min/max non-black rows in the secret column)
   let secretMinRow: number | null = null;
   let secretMaxRow: number | null = null;
-  if (secretCol !== null) {
+  if (isSecret && secretCol !== null) {
     for (let row = minRow; row <= maxRow; row++) {
       const cell = data.cells[makeKey(row, secretCol)];
       if (cell && !cell.isBlack) {
@@ -88,6 +92,7 @@ export function CrosswordGrid({
           bottom: boolean;
         } | null = null;
         if (
+          isSecret &&
           col === secretCol &&
           !cell.isBlack &&
           secretMinRow !== null &&
@@ -110,6 +115,7 @@ export function CrosswordGrid({
             edgeDirections={edgeDirs}
             isRemovable={removable}
             secretEdges={secretEdges}
+            showClueNumber={!isSecret}
             onRemoveCell={onRemoveCell}
             onSetLetter={onSetLetter}
             onAddCell={onAddCell}

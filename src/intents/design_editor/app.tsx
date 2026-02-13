@@ -1,11 +1,11 @@
-import { Button, Rows, Switch, Text, Title } from "@canva/app-ui-kit";
+import { Button, Rows, SegmentedControl, Switch, Text, Title } from "@canva/app-ui-kit";
 import { initAppElement } from "@canva/design";
 import type { AppElementOptions } from "@canva/design";
 import { useEffect, useMemo, useState } from "react";
 import * as styles from "styles/components.css";
 import * as crosswordStyles from "styles/crossword.css";
 
-import type { AppElementData } from "../../types";
+import type { AppElementData, CrosswordMode } from "../../types";
 import { useCrosswordState } from "../../hooks/useCrosswordState";
 import { CrosswordGrid } from "../../components/CrosswordGrid";
 import { renderToCanvasElements } from "../../utils/canvasRenderer";
@@ -31,6 +31,7 @@ export const App = () => {
     addCellInDirection,
     setSecretCol,
     setShowRowNumbers,
+    setMode,
     resetGrid,
     loadData,
   } = useCrosswordState();
@@ -83,37 +84,51 @@ export const App = () => {
           Focus a cell and type to enter a letter.
         </Text>
 
+        <SegmentedControl
+          options={[
+            { label: "Classic", value: "classic" },
+            { label: "Secret word", value: "secret" },
+          ]}
+          value={data.mode}
+          onChange={(value) => setMode(value as CrosswordMode)}
+        />
+
         <CrosswordGrid
           data={data}
           secretCol={data.secretCol}
           showRowNumbers={data.showRowNumbers}
+          mode={data.mode}
           onRemoveCell={removeCell}
           onSetLetter={setLetter}
           onAddCell={addCellInDirection}
         />
 
-        <Switch
-          label="Show row numbers"
-          value={data.showRowNumbers}
-          onChange={(value) => setShowRowNumbers(value)}
-        />
+        {data.mode === "secret" && (
+          <>
+            <Switch
+              label="Show row numbers"
+              value={data.showRowNumbers}
+              onChange={(value) => setShowRowNumbers(value)}
+            />
 
-        <Rows spacing="0.5u">
-          <Text size="small" variant="bold">
-            Secret word column
-          </Text>
-          <div className={crosswordStyles.secretColSelector}>
-            {availableCols.map((col) => (
-              <button
-                key={col}
-                className={`${crosswordStyles.secretColButton}${data.secretCol === col ? ` ${crosswordStyles.secretColButtonActive}` : ""}`}
-                onClick={() => setSecretCol(data.secretCol === col ? null : col)}
-              >
-                {col + 1}
-              </button>
-            ))}
-          </div>
-        </Rows>
+            <Rows spacing="0.5u">
+              <Text size="small" variant="bold">
+                Secret word column
+              </Text>
+              <div className={crosswordStyles.secretColSelector}>
+                {availableCols.map((col) => (
+                  <button
+                    key={col}
+                    className={`${crosswordStyles.secretColButton}${data.secretCol === col ? ` ${crosswordStyles.secretColButtonActive}` : ""}`}
+                    onClick={() => setSecretCol(data.secretCol === col ? null : col)}
+                  >
+                    {col + 1}
+                  </button>
+                ))}
+              </div>
+            </Rows>
+          </>
+        )}
 
         {isOverSize && (
           <Text size="small" tone="critical">
