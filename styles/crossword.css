@@ -1,0 +1,164 @@
+/* Crossword grid container */
+.gridWrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.grid {
+  display: grid;
+  gap: 1px;
+  background-color: #000;
+  border: 1px solid #000;
+}
+
+/* Single cell */
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  border: none;
+  padding: 0;
+}
+
+.cellWhite {
+  background-color: #fff;
+}
+
+.cellBlack {
+  background-color: #000;
+}
+
+.cellFocused {
+  box-shadow: inset 0 0 0 2px #3b82f6;
+}
+
+.cellHover {
+  background-color: #f0f0ff;
+}
+
+/* Clue number in top-left */
+.clueNumber {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  font-size: 8px;
+  line-height: 1;
+  color: #000;
+  pointer-events: none;
+  font-family: Arial, sans-serif;
+}
+
+/* Letter centered in cell */
+.letter {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+  text-transform: uppercase;
+  pointer-events: none;
+  font-family: Arial, sans-serif;
+  margin-top: 4px;
+}
+
+/* Placeholder cell (empty grid position) */
+.placeholder {
+  background-color: transparent;
+}
+
+/* Add cell button */
+.addButtonWrapper {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.cell:hover .addButtonWrapper,
+.cell:focus .addButtonWrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.addButton {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #8b5cf6;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-weight: 700;
+  transition: background-color 0.1s ease;
+}
+
+.addButton:hover {
+  background-color: #7c3aed;
+}
+
+/* Positioning for each direction */
+.addTop {
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.addBottom {
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.addLeft {
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.addRight {
+  right: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Clue editor */
+.clueSection {
+  margin-top: 8px;
+}
+
+.clueItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.clueNumber2 {
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 24px;
+  padding-top: 6px;
+  color: var(--ui-kit-color-content-default-fg, #000);
+}
+
+/* Size warning */
+.sizeWarning {
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+}

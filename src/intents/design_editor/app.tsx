@@ -1,84 +1,108 @@
-import { Button, Rows, Text } from "@canva/app-ui-kit";
-import { addElementAtCursor, addElementAtPoint } from "@canva/design";
-import { requestOpenExternalUrl } from "@canva/platform";
-import { FormattedMessage, useIntl } from "react-intl";
+import { Button, Rows, Text, Title } from "@canva/app-ui-kit";
+import { initAppElement } from "@canva/design";
+import type { AppElementOptions } from "@canva/design";
+import { useEffect, useState } from "react";
 import * as styles from "styles/components.css";
-import { useFeatureSupport } from "@canva/app-hooks";
 
-export const DOCS_URL = "https://www.canva.dev/docs/apps/";
+import type { AppElementData } from "../../types";
+import { useCrosswordState } from "../../hooks/useCrosswordState";
+import { CrosswordGrid } from "../../components/CrosswordGrid";
+import { ClueEditor } from "../../components/ClueEditor";
+import { renderToCanvasElements } from "../../utils/canvasRenderer";
+import { serialize, deserialize, estimateSize } from "../../utils/serialization";
+
+const MAX_DATA_SIZE = 5000;
+
+const appElementClient = initAppElement<AppElementData>({
+  render: (data) => {
+    const crosswordData = deserialize(data);
+    return renderToCanvasElements(crosswordData);
+  },
+});
+
+type UpdateFn = (opts: AppElementOptions<AppElementData>) => Promise<void>;
 
 export const App = () => {
-  const isSupported = useFeatureSupport();
-  const addElement = [addElementAtPoint, addElementAtCursor].find((fn) =>
-    isSupported(fn),
-  );
-  const onClick = () => {
-    if (!addElement) {
-      return;
-    }
+  const {
+    data,
+    toggleBlack,
+    setLetter,
+    updateClueText,
+    addCellInDirection,
+    resetGrid,
+    loadData,
+  } = useCrosswordState();
 
-    addElement({
-      type: "text",
-      children: ["Hello world!"],
+  const [updateFn, setUpdateFn] = useState<UpdateFn | null>(null);
+
+  useEffect(() => {
+    appElementClient.registerOnElementChange((appElement) => {
+      if (appElement) {
+        const crosswordData = deserialize(appElement.data);
+        loadData(crosswordData);
+        setUpdateFn(() => appElement.update);
+      } else {
+        setUpdateFn(null);
+      }
     });
+  }, [loadData]);
+
+  const handleAddOrUpdate = () => {
+    const serialized = serialize(data);
+    if (updateFn) {
+      updateFn({ data: serialized });
+    } else {
+      appElementClient.addElement({ data: serialized });
+    }
   };
 
-  const openExternalUrl = async (url: string) => {
-    const response = await requestOpenExternalUrl({
-      url,
-    });
-
-    if (response.status === "aborted") {
-      // user decided not to navigate to the link
-    }
-  };
-
-  const intl = useIntl();
+  const serialized = serialize(data);
+  const dataSize = estimateSize(serialized);
+  const isOverSize = dataSize > MAX_DATA_SIZE;
 
   return (
     <div className={styles.scrollContainer}>
       <Rows spacing="2u">
-        <Text>
-          <FormattedMessage
-            defaultMessage="
-              To make changes to this app, edit the <code>src/app.tsx</code> file,
-              then close and reopen the app in the editor to preview the changes.
-            "
-            description="Instructions for how to make changes to the app. Do not translate <code>src/app.tsx</code>."
-            values={{
-              code: (chunks) => <code>{chunks}</code>,
-            }}
-          />
+        <Title size="small">Crossword Builder</Title>
+
+        <Text size="small" tone="tertiary">
+          Hover a cell and click "+" to expand. Click a cell to toggle
+          black/white. Focus a cell and type to enter a letter.
         </Text>
-        <Button
-          variant="primary"
-          onClick={onClick}
-          disabled={!addElement}
-          tooltipLabel={
-            !addElement
-              ? intl.formatMessage({
-                  defaultMessage:
-                    "This feature is not supported in the current page",
-                  description:
-                    "Tooltip label for when a feature is not supported in the current design",
-                })
-              : undefined
-          }
-          stretch
-        >
-          {intl.formatMessage({
-            defaultMessage: "Do something cool",
-            description:
-              "Button text to do something cool. Creates a new text element when pressed.",
-          })}
-        </Button>
-        <Button variant="secondary" onClick={() => openExternalUrl(DOCS_URL)}>
-          {intl.formatMessage({
-            defaultMessage: "Open Canva Apps SDK docs",
-            description:
-              "Button text to open Canva Apps SDK docs. Opens an external URL when pressed.",
-          })}
-        </Button>
+
+        <CrosswordGrid
+          data={data}
+          onToggleBlack={toggleBlack}
+          onSetLetter={setLetter}
+          onAddCell={addCellInDirection}
+        />
+
+        {isOverSize && (
+          <Text size="small" tone="critical">
+            Grid data is too large ({Math.round(dataSize / 1000)}KB / 5KB).
+            Remove some cells to continue.
+          </Text>
+        )}
+
+        <Rows spacing="1u">
+          <Button
+            variant="primary"
+            onClick={handleAddOrUpdate}
+            disabled={isOverSize}
+            stretch
+          >
+            {updateFn ? "Update design" : "Add to design"}
+          </Button>
+          <Button variant="secondary" onClick={resetGrid} stretch>
+            Reset grid
+          </Button>
+        </Rows>
+
+        <ClueEditor
+          across={data.clues.across}
+          down={data.clues.down}
+          onUpdateClue={updateClueText}
+        />
       </Rows>
     </div>
   );
