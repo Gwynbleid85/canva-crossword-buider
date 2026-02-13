@@ -55,7 +55,9 @@ export function GridCell({
   );
 
   const cellClass = cell.isBlack
-    ? (showClueNumber ? styles.cellBlackFilled : styles.cellBlack)
+    ? showClueNumber
+      ? styles.cellBlackFilled
+      : styles.cellBlack
     : styles.cellWhite;
 
   const secretClass = secretEdges
@@ -64,7 +66,7 @@ export function GridCell({
         secretEdges.right ? styles.cellSecretRight : "",
         secretEdges.top ? styles.cellSecretTop : "",
         secretEdges.bottom ? styles.cellSecretBottom : "",
-            ]
+      ]
         .filter(Boolean)
         .join(" ")
     : "";

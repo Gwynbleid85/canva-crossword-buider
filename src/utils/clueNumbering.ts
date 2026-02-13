@@ -1,9 +1,11 @@
 import type { CellKey, ClueEntry, CrosswordCell } from "../types";
 import { makeKey, parseKey, computeBounds } from "./gridHelpers";
 
-export function assignClueNumbers(
-  cells: Record<CellKey, CrosswordCell>,
-): { cells: Record<CellKey, CrosswordCell>; across: ClueEntry[]; down: ClueEntry[] } {
+export function assignClueNumbers(cells: Record<CellKey, CrosswordCell>): {
+  cells: Record<CellKey, CrosswordCell>;
+  across: ClueEntry[];
+  down: ClueEntry[];
+} {
   const bounds = computeBounds(cells);
   if (!bounds) return { cells, across: [], down: [] };
 

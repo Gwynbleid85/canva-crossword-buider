@@ -51,9 +51,7 @@ export function ClueEditor({ across, down, onUpdateClue }: ClueEditorProps) {
                 <TextInput
                   {...props}
                   placeholder="Enter clue..."
-                  onChange={(value) =>
-                    onUpdateClue("down", clue.number, value)
-                  }
+                  onChange={(value) => onUpdateClue("down", clue.number, value)}
                 />
               )}
             />

@@ -1,4 +1,11 @@
-import { Button, Rows, SegmentedControl, Switch, Text, Title } from "@canva/app-ui-kit";
+import {
+  Button,
+  Rows,
+  SegmentedControl,
+  Switch,
+  Text,
+  Title,
+} from "@canva/app-ui-kit";
 import { initAppElement } from "@canva/design";
 import type { AppElementOptions } from "@canva/design";
 import { useEffect, useMemo, useState } from "react";
@@ -9,7 +16,11 @@ import type { AppElementData, CrosswordMode } from "../../types";
 import { useCrosswordState } from "../../hooks/useCrosswordState";
 import { CrosswordGrid } from "../../components/CrosswordGrid";
 import { renderToCanvasElements } from "../../utils/canvasRenderer";
-import { serialize, deserialize, estimateSize } from "../../utils/serialization";
+import {
+  serialize,
+  deserialize,
+  estimateSize,
+} from "../../utils/serialization";
 import { computeBounds } from "../../utils/gridHelpers";
 
 const MAX_DATA_SIZE = 5000;
@@ -120,7 +131,9 @@ export const App = () => {
                   <button
                     key={col}
                     className={`${crosswordStyles.secretColButton}${data.secretCol === col ? ` ${crosswordStyles.secretColButtonActive}` : ""}`}
-                    onClick={() => setSecretCol(data.secretCol === col ? null : col)}
+                    onClick={() =>
+                      setSecretCol(data.secretCol === col ? null : col)
+                    }
                   >
                     {col + 1}
                   </button>
@@ -150,7 +163,6 @@ export const App = () => {
             Reset grid
           </Button>
         </Rows>
-
       </Rows>
     </div>
   );

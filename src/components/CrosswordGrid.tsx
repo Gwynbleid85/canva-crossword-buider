@@ -1,4 +1,9 @@
-import type { CellKey, CrosswordData, CrosswordMode, Direction } from "../types";
+import type {
+  CellKey,
+  CrosswordData,
+  CrosswordMode,
+  Direction,
+} from "../types";
 import {
   computeBounds,
   makeKey,
@@ -37,9 +42,8 @@ export function CrosswordGrid({
 
   const isSecret = mode === "secret";
 
-  const firstWhiteColPerRow = isSecret && showRowNumbers
-    ? getFirstWhiteColPerRow(data.cells)
-    : null;
+  const firstWhiteColPerRow =
+    isSecret && showRowNumbers ? getFirstWhiteColPerRow(data.cells) : null;
 
   // Extend grid left by 1 column if any row's first white cell is at minCol
   if (firstWhiteColPerRow) {
