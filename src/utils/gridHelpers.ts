@@ -76,6 +76,22 @@ export function isRemovable(
   return !hasLeft || !hasRight || !hasUp || !hasDown;
 }
 
+export function getFirstWhiteColPerRow(
+  cells: Record<CellKey, CrosswordCell>,
+): Map<number, number> {
+  const result = new Map<number, number>();
+  for (const key of Object.keys(cells) as CellKey[]) {
+    const cell = cells[key]!;
+    if (cell.isBlack) continue;
+    const { row, col } = parseKey(key);
+    const current = result.get(row);
+    if (current === undefined || col < current) {
+      result.set(row, col);
+    }
+  }
+  return result;
+}
+
 export function getNeighborPosition(
   row: number,
   col: number,

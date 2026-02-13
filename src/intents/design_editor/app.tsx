@@ -8,7 +8,6 @@ import * as crosswordStyles from "styles/crossword.css";
 import type { AppElementData } from "../../types";
 import { useCrosswordState } from "../../hooks/useCrosswordState";
 import { CrosswordGrid } from "../../components/CrosswordGrid";
-import { ClueEditor } from "../../components/ClueEditor";
 import { renderToCanvasElements } from "../../utils/canvasRenderer";
 import { serialize, deserialize, estimateSize } from "../../utils/serialization";
 import { computeBounds } from "../../utils/gridHelpers";
@@ -29,7 +28,6 @@ export const App = () => {
     data,
     removeCell,
     setLetter,
-    updateClueText,
     addCellInDirection,
     setSecretCol,
     setShowRowNumbers,
@@ -138,11 +136,6 @@ export const App = () => {
           </Button>
         </Rows>
 
-        <ClueEditor
-          across={data.clues.across}
-          down={data.clues.down}
-          onUpdateClue={updateClueText}
-        />
       </Rows>
     </div>
   );

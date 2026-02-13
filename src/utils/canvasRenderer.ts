@@ -1,5 +1,5 @@
 import type { CellKey, CrosswordData } from "../types";
-import { computeBounds, parseKey } from "./gridHelpers";
+import { computeBounds, parseKey, getFirstWhiteColPerRow } from "./gridHelpers";
 import { CANVAS_CELL_SIZE, CANVAS_BORDER_WIDTH, COLORS } from "../constants";
 
 type RenderedElement =
@@ -30,25 +30,38 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
   const bounds = computeBounds(data.cells);
   if (!bounds) return [];
 
-  const { minRow, maxRow, minCol, maxCol } = bounds;
+  const { minRow, maxRow, maxCol } = bounds;
+  let { minCol } = bounds;
   const cellSize = CANVAS_CELL_SIZE;
   const border = CANVAS_BORDER_WIDTH;
-  const xOffset = data.showRowNumbers ? ROW_NUM_WIDTH : 0;
 
   const elements: RenderedElement[] = [];
 
-  // Render row numbers
+  // Extend grid left if any row needs a row number at minCol
+  let firstWhiteColPerRow: Map<number, number> | null = null;
   if (data.showRowNumbers) {
-    for (let row = minRow; row <= maxRow; row++) {
+    firstWhiteColPerRow = getFirstWhiteColPerRow(data.cells);
+    for (const firstCol of firstWhiteColPerRow.values()) {
+      if (firstCol === minCol) {
+        minCol = minCol - 1;
+        break;
+      }
+    }
+  }
+
+  // Render row numbers — positioned directly to the left of each row's first white cell
+  if (firstWhiteColPerRow) {
+    for (const [row, firstWhiteCol] of firstWhiteColPerRow) {
       const gridRow = row - minRow;
       const y = gridRow * (cellSize + border);
+      const x = (firstWhiteCol - minCol - 1) * (cellSize + border);
       elements.push({
         type: "text",
         top: y + cellSize * 0.2,
-        left: 0,
+        left: x,
         width: ROW_NUM_WIDTH,
-        children: [String(row - minRow + 1)],
-        fontSize: 14,
+        children: [String(row - minRow + 1) + "."],
+        fontSize: 18,
         fontWeight: "bold",
         color: COLORS.black,
         textAlign: "center",
@@ -65,7 +78,7 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     const gridRow = row - minRow;
     const gridCol = col - minCol;
 
-    const x = gridCol * (cellSize + border) + xOffset;
+    const x = gridCol * (cellSize + border);
     const y = gridRow * (cellSize + border);
 
     const outerSize = cellSize + border * 2;
@@ -137,7 +150,7 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
       const gridRowMin = secretMinRow - minRow;
       const gridRowMax = secretMaxRow - minRow;
 
-      const frameX = gridCol * (cellSize + border) + xOffset;
+      const frameX = gridCol * (cellSize + border);
       const frameY = gridRowMin * (cellSize + border);
       const frameW = cellSize;
       const frameH =

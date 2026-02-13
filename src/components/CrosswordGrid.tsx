@@ -4,6 +4,7 @@ import {
   makeKey,
   getEdgeDirections,
   isRemovable,
+  getFirstWhiteColPerRow,
 } from "../utils/gridHelpers";
 import { GridCell } from "./GridCell";
 import { SIDEBAR_WIDTH, MAX_CELL_SIZE, MIN_CELL_SIZE } from "../constants";
@@ -29,7 +30,23 @@ export function CrosswordGrid({
   const bounds = computeBounds(data.cells);
   if (!bounds) return null;
 
-  const { minRow, maxRow, minCol, maxCol } = bounds;
+  const { minRow, maxRow, maxCol } = bounds;
+  let { minCol } = bounds;
+
+  const firstWhiteColPerRow = showRowNumbers
+    ? getFirstWhiteColPerRow(data.cells)
+    : null;
+
+  // Extend grid left by 1 column if any row's first white cell is at minCol
+  if (firstWhiteColPerRow) {
+    for (const firstCol of firstWhiteColPerRow.values()) {
+      if (firstCol === minCol) {
+        minCol = minCol - 1;
+        break;
+      }
+    }
+  }
+
   const numRows = maxRow - minRow + 1;
   const numCols = maxCol - minCol + 1;
 
@@ -56,13 +73,6 @@ export function CrosswordGrid({
   const gridItems: React.ReactNode[] = [];
 
   for (let row = minRow; row <= maxRow; row++) {
-    if (showRowNumbers) {
-      gridItems.push(
-        <div key={`rn-${row}`} className={styles.rowNumber} style={{ height: cellSize }}>
-          {row - minRow + 1}
-        </div>,
-      );
-    }
     for (let col = minCol; col <= maxCol; col++) {
       const key = makeKey(row, col);
       const cell = data.cells[key];
@@ -106,14 +116,31 @@ export function CrosswordGrid({
           />,
         );
       } else {
-        // Empty placeholder position
-        gridItems.push(
-          <div
-            key={key}
-            className={styles.placeholder}
-            style={{ width: cellSize, height: cellSize }}
-          />,
-        );
+        // Check if this placeholder should show a row number
+        const firstWhiteCol = firstWhiteColPerRow?.get(row);
+        if (
+          firstWhiteCol !== undefined &&
+          firstWhiteCol > minCol &&
+          col === firstWhiteCol - 1
+        ) {
+          gridItems.push(
+            <div
+              key={key}
+              className={styles.rowNumber}
+              style={{ width: cellSize, height: cellSize }}
+            >
+              {row - minRow + 1}.
+            </div>,
+          );
+        } else {
+          gridItems.push(
+            <div
+              key={key}
+              className={styles.placeholder}
+              style={{ width: cellSize, height: cellSize }}
+            />,
+          );
+        }
       }
     }
   }
@@ -123,9 +150,7 @@ export function CrosswordGrid({
       <div
         className={styles.grid}
         style={{
-          gridTemplateColumns: showRowNumbers
-            ? `${cellSize}px repeat(${numCols}, ${cellSize}px)`
-            : `repeat(${numCols}, ${cellSize}px)`,
+          gridTemplateColumns: `repeat(${numCols}, ${cellSize}px)`,
           gridTemplateRows: `repeat(${numRows}, ${cellSize}px)`,
         }}
         role="grid"
