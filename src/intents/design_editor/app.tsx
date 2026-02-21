@@ -1,5 +1,7 @@
 import {
   Button,
+  FormField,
+  NumberInput,
   Rows,
   SegmentedControl,
   Switch,
@@ -43,6 +45,7 @@ export const App = () => {
     setSecretCol,
     setShowRowNumbers,
     setMode,
+    setCellSize,
     resetGrid,
     loadData,
   } = useCrosswordState();
@@ -63,10 +66,13 @@ export const App = () => {
 
   const handleAddOrUpdate = () => {
     const serialized = serialize(data);
+    const placement = crosswordDimensions
+      ? { width: crosswordDimensions.widthPx, height: crosswordDimensions.heightPx }
+      : undefined;
     if (updateFn) {
-      updateFn({ data: serialized });
+      updateFn({ data: serialized, ...placement });
     } else {
-      appElementClient.addElement({ data: serialized });
+      appElementClient.addElement({ data: serialized, ...placement });
     }
   };
 
@@ -80,6 +86,19 @@ export const App = () => {
     }
     return cols;
   }, [data.cells]);
+
+  // Calculate total crossword dimensions
+  const crosswordDimensions = useMemo(() => {
+    const bounds = computeBounds(data.cells);
+    if (!bounds) return null;
+    const numCols = bounds.maxCol - bounds.minCol + 1;
+    const numRows = bounds.maxRow - bounds.minRow + 1;
+    const widthPx = numCols * data.cellSize;
+    const heightPx = numRows * data.cellSize;
+    const widthMm = Math.round((widthPx / 11.81) * 100) / 100;
+    const heightMm = Math.round((heightPx / 11.81) * 100) / 100;
+    return { widthPx, heightPx, widthMm, heightMm, numCols, numRows };
+  }, [data.cells, data.cellSize]);
 
   const serialized = serialize(data);
   const dataSize = estimateSize(serialized);
@@ -103,6 +122,29 @@ export const App = () => {
           value={data.mode}
           onChange={(value) => setMode(value as CrosswordMode)}
         />
+
+        <FormField
+          label="Cell size (px)"
+          value={data.cellSize}
+          control={(props) => (
+            <NumberInput
+              {...props}
+              min={1}
+              onChange={(value) => {
+                const newSize = Number(value || 40);
+                setCellSize(newSize);
+              }}
+            />
+          )}
+        />
+
+        {crosswordDimensions && (
+          <Text size="small" tone="tertiary">
+            Total size: {crosswordDimensions.numCols}×{crosswordDimensions.numRows} cells
+            = {crosswordDimensions.widthPx}×{crosswordDimensions.heightPx}px
+            ({crosswordDimensions.widthMm}×{crosswordDimensions.heightMm}mm)
+          </Text>
+        )}
 
         <CrosswordGrid
           data={data}

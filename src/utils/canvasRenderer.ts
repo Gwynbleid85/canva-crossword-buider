@@ -32,7 +32,7 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
 
   const { minRow, maxRow, maxCol } = bounds;
   let { minCol } = bounds;
-  const cellSize = CANVAS_CELL_SIZE;
+  const cellSize = data.cellSize ?? CANVAS_CELL_SIZE;
   const border = CANVAS_BORDER_WIDTH;
 
   const elements: RenderedElement[] = [];
@@ -195,7 +195,7 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
       const frameH =
         (gridRowMax - gridRowMin + 1) * (cellSize + border) - border;
 
-      const bw = 2; // border thickness in viewBox units
+      const bw = 6; // border thickness in viewBox units
       const outerW = frameW + bw * 2;
       const outerH = frameH + bw * 2;
 
@@ -218,23 +218,24 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
         viewBox: { top: 0, left: 0, width: outerW, height: outerH },
       });
 
-      // Draw thin horizontal dividers inside the secret column frame
+      // Draw thick horizontal dividers inside the secret column frame
+      const dividerThickness = 6; // same thickness as the outer frame
       for (let row = secretMinRow + 1; row <= secretMaxRow; row++) {
         const gridRow = row - minRow;
-        const dividerY = gridRow * (cellSize + border) - border;
+        const dividerY = gridRow * (cellSize + border) - dividerThickness / 2;
         elements.push({
           type: "shape",
           top: dividerY,
           left: frameX,
           width: cellSize,
-          height: border,
+          height: dividerThickness,
           paths: [
             {
-              d: `M 0 0 H ${cellSize} V ${border} H 0 Z`,
+              d: `M 0 0 H ${cellSize} V ${dividerThickness} H 0 Z`,
               fill: { color: COLORS.border, dropTarget: false },
             },
           ],
-          viewBox: { top: 0, left: 0, width: cellSize, height: border },
+          viewBox: { top: 0, left: 0, width: cellSize, height: dividerThickness },
         });
       }
     }

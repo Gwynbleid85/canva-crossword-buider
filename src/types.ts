@@ -25,6 +25,7 @@ export interface CrosswordData {
   secretCol: number | null;
   showRowNumbers: boolean;
   mode: CrosswordMode;
+  cellSize: number;
 }
 
 export type AppElementData = {
@@ -42,4 +43,5 @@ export type AppElementData = {
   sc: number | null;
   rn: boolean;
   m: string;
+  cs: number;
 };

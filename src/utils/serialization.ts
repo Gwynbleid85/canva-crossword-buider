@@ -6,6 +6,7 @@ import type {
   CrosswordMode,
 } from "../types";
 import { makeKey } from "./gridHelpers";
+import { CANVAS_CELL_SIZE } from "../constants";
 
 export function serialize(data: CrosswordData): AppElementData {
   const cellEntries = Object.values(data.cells);
@@ -33,6 +34,7 @@ export function serialize(data: CrosswordData): AppElementData {
     sc: data.secretCol ?? null,
     rn: data.showRowNumbers,
     m: data.mode,
+    cs: data.cellSize,
   };
 }
 
@@ -68,6 +70,7 @@ export function deserialize(appData: AppElementData): CrosswordData {
     secretCol: (appData.sc as number | null) ?? null,
     showRowNumbers: (appData.rn as boolean) ?? false,
     mode: ((appData.m as string) || "secret") as CrosswordMode,
+    cellSize: (appData.cs as number) ?? CANVAS_CELL_SIZE,
   };
 }
 

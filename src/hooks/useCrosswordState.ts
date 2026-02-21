@@ -8,7 +8,7 @@ import type {
 } from "../types";
 import { makeKey, getNeighborPosition } from "../utils/gridHelpers";
 import { assignClueNumbers } from "../utils/clueNumbering";
-import { MAX_GRID_SIZE } from "../constants";
+import { MAX_GRID_SIZE, CANVAS_CELL_SIZE } from "../constants";
 import { computeBounds } from "../utils/gridHelpers";
 
 function createCell(row: number, col: number): CrosswordCell {
@@ -46,6 +46,7 @@ function renumber(data: CrosswordData): CrosswordData {
     secretCol: data.secretCol,
     showRowNumbers: data.showRowNumbers,
     mode: data.mode,
+    cellSize: data.cellSize,
   };
 }
 
@@ -59,6 +60,7 @@ function createInitialState(): CrosswordData {
     secretCol: null,
     showRowNumbers: false,
     mode: "secret",
+    cellSize: CANVAS_CELL_SIZE,
   });
 }
 
@@ -166,6 +168,10 @@ export function useCrosswordState(initialData?: CrosswordData) {
     setData((prev) => ({ ...prev, mode }));
   }, []);
 
+  const setCellSize = useCallback((cellSize: number) => {
+    setData((prev) => ({ ...prev, cellSize }));
+  }, []);
+
   const resetGrid = useCallback(() => {
     setData(createInitialState());
   }, []);
@@ -185,6 +191,7 @@ export function useCrosswordState(initialData?: CrosswordData) {
     setSecretCol,
     setShowRowNumbers,
     setMode,
+    setCellSize,
     resetGrid,
     loadData,
   };

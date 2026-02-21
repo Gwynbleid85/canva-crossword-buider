@@ -43,19 +43,19 @@
 }
 
 .cellSecretLeft {
-  border-left: 2px solid #000;
+  border-left: 3px solid #000;
 }
 
 .cellSecretRight {
-  border-right: 2px solid #000;
+  border-right: 3px solid #000;
 }
 
 .cellSecretTop {
-  border-top: 2px solid #000;
+  border-top: 3px solid #000;
 }
 
 .cellSecretBottom {
-  border-bottom: 2px solid #000;
+  border-bottom: 3px solid #000;
 }
 
 .cellFocused {
