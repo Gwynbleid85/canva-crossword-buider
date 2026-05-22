@@ -103,40 +103,46 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
     const gridRow = row - minRow;
     const gridCol = col - minCol;
 
-    const x = gridCol * (cellSize + border);
-    const y = gridRow * (cellSize + border);
+    // Round positions to avoid sub-pixel rendering
+    const x = Math.round(gridCol * (cellSize + border));
+    const y = Math.round(gridRow * (cellSize + border));
 
-    // Black border rect behind the white cell
-    const outerSize = cellSize + border * 2;
+    // Draw cell with border using a single combined shape
+    // Outer rect (border) with inner white rect creates clean borders
+    const outerSize = Math.round(cellSize + border * 2);
+    const innerSize = Math.round(cellSize);
+    const borderOffset = border;
+
     elements.push({
       type: "shape",
-      top: y - border,
-      left: x - border,
+      top: y - borderOffset,
+      left: x - borderOffset,
       width: outerSize,
       height: outerSize,
       paths: [
         {
-          d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z`,
+          // Outer black rectangle for border
+          d: `M 0 0 H ${outerSize} V ${outerSize} H 0 Z M ${borderOffset} ${borderOffset} V ${outerSize - borderOffset} H ${outerSize - borderOffset} V ${borderOffset} H ${borderOffset} Z`,
           fill: { color: COLORS.border, dropTarget: false },
         },
       ],
       viewBox: { top: 0, left: 0, width: outerSize, height: outerSize },
     });
 
-    // Cell fill rect (always white)
+    // White cell fill
     elements.push({
       type: "shape",
       top: y,
       left: x,
-      width: cellSize,
-      height: cellSize,
+      width: innerSize,
+      height: innerSize,
       paths: [
         {
-          d: `M 0 0 H ${cellSize} V ${cellSize} H 0 Z`,
+          d: `M 0 0 H ${innerSize} V ${innerSize} H 0 Z`,
           fill: { color: COLORS.white, dropTarget: false },
         },
       ],
-      viewBox: { top: 0, left: 0, width: cellSize, height: cellSize },
+      viewBox: { top: 0, left: 0, width: innerSize, height: innerSize },
     });
 
     // Clue number in top-left (classic mode only)
@@ -189,16 +195,17 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
       const gridRowMin = secretMinRow - minRow;
       const gridRowMax = secretMaxRow - minRow;
 
-      const frameX = gridCol * (cellSize + border);
-      const frameY = gridRowMin * (cellSize + border);
-      const frameW = cellSize;
-      const frameH =
-        (gridRowMax - gridRowMin + 1) * (cellSize + border) - border;
+      // Round all positions for crisp rendering
+      const frameX = Math.round(gridCol * (cellSize + border));
+      const frameY = Math.round(gridRowMin * (cellSize + border));
+      const frameW = Math.round(cellSize);
+      const frameH = Math.round((gridRowMax - gridRowMin + 1) * (cellSize + border) - border);
 
-      const bw = 6; // border thickness in viewBox units
+      const bw = 6; // border thickness
       const outerW = frameW + bw * 2;
       const outerH = frameH + bw * 2;
 
+      // Draw secret column frame using path with hole (more reliable rendering)
       elements.push({
         type: "shape",
         top: frameY - bw,
@@ -207,35 +214,32 @@ export function renderToCanvasElements(data: CrosswordData): RenderedElement[] {
         height: outerH,
         paths: [
           {
-            d: `M 0 0 H ${outerW} V ${outerH} H 0 Z`,
+            // Outer rectangle with inner hole creates the frame
+            d: `M 0 0 H ${outerW} V ${outerH} H 0 Z M ${bw} ${bw} V ${outerH - bw} H ${outerW - bw} V ${bw} H ${bw} Z`,
             fill: { color: COLORS.border, dropTarget: false },
-          },
-          {
-            d: `M ${bw} ${bw} H ${outerW - bw} V ${outerH - bw} H ${bw} Z`,
-            fill: { color: COLORS.white, dropTarget: false },
           },
         ],
         viewBox: { top: 0, left: 0, width: outerW, height: outerH },
       });
 
-      // Draw thick horizontal dividers inside the secret column frame
-      const dividerThickness = 6; // same thickness as the outer frame
+      // Draw horizontal dividers inside the secret column frame
+      const dividerThickness = 6;
       for (let row = secretMinRow + 1; row <= secretMaxRow; row++) {
         const gridRow = row - minRow;
-        const dividerY = gridRow * (cellSize + border) - dividerThickness / 2;
+        const dividerY = Math.round(gridRow * (cellSize + border) - dividerThickness / 2);
         elements.push({
           type: "shape",
           top: dividerY,
           left: frameX,
-          width: cellSize,
+          width: frameW,
           height: dividerThickness,
           paths: [
             {
-              d: `M 0 0 H ${cellSize} V ${dividerThickness} H 0 Z`,
+              d: `M 0 0 H ${frameW} V ${dividerThickness} H 0 Z`,
               fill: { color: COLORS.border, dropTarget: false },
             },
           ],
-          viewBox: { top: 0, left: 0, width: cellSize, height: dividerThickness },
+          viewBox: { top: 0, left: 0, width: frameW, height: dividerThickness },
         });
       }
     }
